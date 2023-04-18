@@ -6,4 +6,4 @@ using System.Text;
 using OpenXML;
 
 
-new GeneratedClass().OpenAndAddTextToWordDocument(@"C:\AIS\Output.docx","текст");
+new GeneratedClass().CreateWordDocument(@"C:\AIS\Output.docx");
