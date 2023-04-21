@@ -8,7 +8,7 @@ namespace OpenXML
 {
     public class Contragent
     {
-        public int id { get; set; }
+        public int Id { get; set; }
         public bool IsMain { get; set; }
         public string Name { get; set; }
         public string INN { get; set; }

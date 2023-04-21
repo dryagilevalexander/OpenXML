@@ -14,6 +14,8 @@ using Style = DocumentFormat.OpenXml.Wordprocessing.Style;
 using StyleValues = DocumentFormat.OpenXml.Wordprocessing.StyleValues;
 using System;
 using System.Diagnostics;
+using DocumentFormat.OpenXml.Office.CustomUI;
+using DocumentFormat.OpenXml.Presentation;
 
 namespace OpenXML
 {
@@ -23,11 +25,6 @@ namespace OpenXML
 
         public void CreateWordDocument(string filepath, Contract contract)
         {
-            string contractType = "";
-            string contractName = "";
-            string baseOfContract = "";
-            string paragraphBaseOfContract = "";
-
             //Создаем новый документ
             WordprocessingDocument wordDoc = WordprocessingDocument.Create(filepath, WordprocessingDocumentType.Document);
             //Создаем корень документа
@@ -45,111 +42,46 @@ namespace OpenXML
             NumberingDefinitionsPart numberingDefinitionsPart = mainPart.AddNewPart<NumberingDefinitionsPart>("rId1");
             GenerateNumberingDefinitionsPart1Content(numberingDefinitionsPart);
 
-            switch (contract.ContractType)
-                {
-                case 1:
-                    contractType = "подряда";
-                break;
-                case 2:
-                    contractType = "оказания услуг";
-                break;
-                case 3:
-                    contractType = "поставки";
-                break;
-                case 4:
-                    contractType = "аренды";
-                break;
-            }
-
-            if(contract.RegulationType == 3)
+            List<Condition> conditions = contract.Conditions;
+            foreach(var condit in conditions)
             {
-                switch (contract.RegulationParagraph)
+                if(condit.TypeOfCondition==1)
                 {
-                    case 1:
-                        paragraphBaseOfContract = "п. 4 ст. 93 ";
-                    break;
-                    case 2:
-                        paragraphBaseOfContract = "п. 8 ст. 93 "; 
-                    break;
+                    createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", true, condit.Name);
+                    CreateDateAndPlaceTable(wordDoc, "рп. Некрасовское", "__.__.202_");
+                    createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", false, "");
                 }
-            }
 
-            switch (contract.RegulationType)
-            {
-                case 1:
-                    contractName = "Договор";
-                    break;
-                case 2:
-                    contractName = "Договор";
-                    baseOfContract = "на основании федерального закона \"О закупках товаров, работ, услуг отдельными видами юридических лиц\" от 18.07.2011 N 223-ФЗ,";
-                    break;
-                case 3:
-                    contractName = "Контракт";
-                    baseOfContract = "на основании " + paragraphBaseOfContract + "федерального закона \"О контрактной системе в сфере закупок товаров, работ, услуг для обеспечения государственных и муниципальных нужд\" от 05.04.2013 N 44-ФЗ,";
-                    break;
+                if (condit.TypeOfCondition == 2)
+                {
+                    createParagraph(wordDoc, "a3", "24", false, 0, 0, "both", false, condit.Text);
+                    createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", false, "");
+                }
 
-            }
+                if (condit.TypeOfCondition == 3)
+                {
+                    createParagraph(wordDoc, "a3", "24", true, 0, 1, "center", true, condit.Name);
+                    if(condit.SubConditions!= null)
+                    {
+                        foreach (var item in condit.SubConditions)
+                        {
+                            createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, item.Text);
+                            if (item.SubConditionParagraphs != null)
+                            {
+                                foreach (var paragraph in item.SubConditionParagraphs)
+                                {
+                                    createParagraph(wordDoc, "a3", "24", true, 2, 1, "both", false, paragraph.Text);
+                                }
 
-
-
-            Dictionary<string, string> mainProp = new Dictionary<string, string>()
-               {
-                    { "Наименование:", contract.MainOrganization.Name},
-                    { "ИНН", contract.MainOrganization.INN},
-                    { "КПП", contract.MainOrganization.KPP},
-                    { "Директор _________ ", contract.MainOrganization.DirectorName}
-               };
-
-            Dictionary<string, string> contragentProp = new Dictionary<string, string>()
-               {
-                    { "Наименование:", contract.Contragent.Name},
-                    { "ИНН", contract.Contragent.INN},
-                    { "КПП", contract.Contragent.KPP},
-                    { "Директор _________ ", contract.Contragent.DirectorName}
-               };
-
-            //Создаем абзацы
-            createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", true, contractName + " " + contractType + " № __");
-            CreateDateAndPlaceTable(wordDoc, "рп. Некрасовское", "__.__.202_");
-            createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", false, "");
-            string condition = contract.MainOrganization.Name + " именуемое в дальнейшем \"Заказчик\", в лице директора " + contract.MainOrganization.DirectorNameR + ", действующего на основании Устава, с одной стороны, и " + contract.Contragent.Name + ", именуемое в дальнейшем \"Подрядчик\", в лице директора " + contract.Contragent.DirectorNameR + ", действующего на основании Устава, с другой стороны, " + baseOfContract + " заключили настоящий " + contractName + " о нижеследующем:";
-            createParagraph(wordDoc, "a3", "24", false, 0, 0, "both", false, condition);
-            createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", false, "");
-            createParagraph(wordDoc, "a3", "24", true, 0, 1, "center", true, "Предмет " + contractName + "a" + " и общие условия");
-            condition = "Подрядчик обязуется выполнить по заданию Заказчика работу, указанную в пункте 1.2 настоящего " + contractName + "a" + ", и сдать ее результат Заказчику, а Заказчик обязуется принять результат работы и оплатить его.";
-            createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, condition);
-            condition = "Подрядчик обязуется выполнить следующую работу: " + contract.SubjectOfContract + ", именуемую в дальнейшем \"Работа\".";
-            createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, condition);
-            createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", false, "");
-            createParagraph(wordDoc, "a3", "24", true, 0, 1, "center", true, "Права и обязанности сторон");
-            createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, "Подрядчик обязуется:");
-            condition = "Подрядчик обязуется выполнить Работу с надлежащим качеством, из своих материалов, своими силами и средствами.";
-            createParagraph(wordDoc, "a3", "24", true, 2, 1, "both", false, condition);
-            condition = "Подрядчик обязуется выполнить Работу в срок до " + contract.DateEnd + " г.";
-            createParagraph(wordDoc, "a3", "24", true, 2, 1, "both", false, condition);
-            
-            if(contract.RegulationType == 3)
-            {
+                            }
+                        }
+                    }
+                }
                 createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", false, "");
-                createParagraph(wordDoc, "a3", "24", true, 0, 1, "center", true, "Ответственность сторон");
-                condition = "За неисполнение или ненадлежащее исполнение Контракта Стороны несут ответственность в соответствии с законодательством Российской Федерации и условиями Контракта";
-                createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, condition);
-                condition = "В случае полного (частичного) неисполнения условий Контракта одной из Сторон эта Сторона обязана возместить другой Стороне причиненные убытки в части, непокрытой неустойкой.";
-                createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, condition);
-                condition = "В случае просрочки исполнения Подрядчиком обязательств, предусмотренных Контрактом, Подрядчик уплачивает Заказчику пени. Пеня начисляется за каждый день просрочки исполнения Подрядчиком обязательства, предусмотренного Контрактом, начиная со дня, следующего после дня истечения установленного Контрактом срока исполнения обязательства. Размер пени составляет одна трехсотая действующей на дату уплаты пени ключевой ставки Центрального банка Российской Федерации от цены Контракта (отдельного этапа исполнения Контракта), уменьшенной на сумму, пропорциональную объему обязательств, предусмотренных Контрактом (соответствующим отдельным этапом исполнения Контракта) и фактически исполненных Подрядчиком.";
-                createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, condition);
-                condition = "В случае просрочки исполнения Заказчиком обязательств, предусмотренных Контрактом, Подрядчик вправе потребовать уплату пени в размере одной трехсотой действующей на дату уплаты пеней ключевой ставки Центрального банка Российской Федерации от не уплаченной в срок суммы. Пеня начисляется за каждый день просрочки исполнения обязательства, предусмотренного Контрактом, начиная со дня, следующего после дня истечения установленного Контрактом срока исполнения обязательства.";
-                createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, condition);
-                condition = "Применение неустойки (штрафа, пени) не освобождает Стороны от исполнения обязательств по Контракту.";
-                createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, condition);
-                condition = "В случае расторжения Контракта в связи с односторонним отказом Стороны от исполнения Контракта другая Сторона вправе потребовать возмещения только фактически понесенного ущерба, непосредственно обусловленного обстоятельствами, являющимися основанием для принятия решения об одностороннем отказе от исполнения Контракта.";
-                createParagraph(wordDoc, "a3", "24", true, 1, 1, "both", false, condition);
             }
 
-
-            createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", false, "");
             createParagraph(wordDoc, "a3", "24", true, 0, 1, "center", true, "Реквизиты");
-            CreateTable(wordDoc, mainProp, contragentProp);
+            CreateTable(wordDoc, contract.MainProp, contract.ContragentProp);
             
             //Закрываем файл
             wordDoc.Close();
