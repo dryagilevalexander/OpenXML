@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Presentation;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Presentation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -15,8 +16,8 @@ namespace OpenXML
             IsPerpetual = false;
             RegulationParagraph = 0;
         }
-
         public int ContractType { get; set; }   //1 - подряд, 2 - услуги, 3 - поставка, 4 - аренда 
+        public int ContractTemplateId { get; set; }
         public int RegulationType { get; set; } //1 - ГК, 2 - 223-ФЗ, 3 - 44-ФЗ
         public int RegulationParagraph { get; set; } //Только для 44-фз: 1 - п.4 ст. 93, 2 п.8 ст. 93 по умолчанию 0
         public bool IsPerpetual { get; set; }
@@ -29,35 +30,26 @@ namespace OpenXML
         public Dictionary<string, string> MainProp { get; set; }
         public Dictionary<string, string> ContragentProp { get; set; }
 
-        public List<Condition> CreateConditions(Contract contract, ConditionsService conditionService)
+        public List<Condition> CreateConditions(ConditionsService conditionService)
         {
             List<Condition> conditions = new List<Condition>();
-
-
-            //Определяем шапку договора
-            Condition headOfContract = conditionService.GetConditionById(5);
-            conditions.Add(headOfContract);
-
-            Condition preamble = conditionService.GetConditionById(4);
-            conditions.Add(preamble);
-
-            //1. Предмет контракта
-            if (contract.ContractType == 1)
-            {
-                Condition subjectOfContract = conditionService.GetConditionById(2);
-                conditions.Add(subjectOfContract);
+            ContractTemplate contractTemplate = conditionService.GetContractTemplateId(ContractTemplateId);
+            foreach(var condition in contractTemplate.Conditions) 
+            { 
+                if(condition.RegulationType == 4)
+                {
+                    conditions.Add(condition);
+                }
+            
+                if(RegulationType == 3)
+                {
+                    if (condition.RegulationType == 3)
+                    {
+                        conditions.Add(condition);
+                    }
+                }
             }
-
-            //2. Права и обязанности сторон
-            Condition rightsAndDuties = conditionService.GetConditionById(3);
-            conditions.Add(rightsAndDuties);
-
-            //3. Включаем ответственность сторон
-            if(contract.RegulationType == 3) //44-ФЗ
-            {
-                conditions.Add(conditionService.GetConditionById(1));
-            }
-
+            
             return conditions;
         }
 

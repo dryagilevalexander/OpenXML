@@ -9,17 +9,17 @@ Contragent contragent = contragentsService.GetContragentById(2);
 Contract contract = new Contract()
 {
     ContractType = 1,
-    RegulationType = 2,
+    ContractTemplateId = 1,
+    RegulationType = 3,
     RegulationParagraph = 2,
     Contragent = contragent,
     MainOrganization = contragentMain,
     SubjectOfContract = "Работы по ремонту теплотрассы в р.п. Некрасовское",
     DateStart = new DateTime(2023, 3, 20).ToShortDateString(),
     DateEnd = new DateTime(2023,12,31).ToShortDateString()
-
 };
 
-contract.Conditions = contract.CreateConditions(contract, conditionsService);
+contract.Conditions = contract.CreateConditions(conditionsService);
 contract.MainProp = contract.GetRequisites(contragentMain);
 contract.ContragentProp = contract.GetRequisites(contragent);
 

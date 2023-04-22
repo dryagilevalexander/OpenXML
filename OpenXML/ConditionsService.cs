@@ -14,9 +14,9 @@ namespace OpenXML
         {
             db = new ApplicationContext();
         }
-        public Condition GetConditionById(int id)
+        public ContractTemplate GetContractTemplateId(int id)
         {
-            return db.Conditions.Include(p => p.SubConditions).ThenInclude(c => c.SubConditionParagraphs).FirstOrDefault(p => p.Id == id);
+            return db.ContractTemplates.Include(p => p.Conditions).ThenInclude(p => p.SubConditions).ThenInclude(c => c.SubConditionParagraphs).FirstOrDefault(p => p.Id == id);
         }
     }
 }
