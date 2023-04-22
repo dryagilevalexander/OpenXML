@@ -9,7 +9,7 @@ Contragent contragent = contragentsService.GetContragentById(2);
 Contract contract = new Contract()
 {
     ContractType = 1,
-    RegulationType = 3,
+    RegulationType = 2,
     RegulationParagraph = 2,
     Contragent = contragent,
     MainOrganization = contragentMain,
@@ -24,4 +24,4 @@ contract.MainProp = contract.GetRequisites(contragentMain);
 contract.ContragentProp = contract.GetRequisites(contragent);
 
 
-new GeneratedClass().CreateWordDocument(@"C:\AIS\Output.docx", contract);
+new DocumentGenerator().CreateContract(@"C:\AIS\Output.docx", contract);

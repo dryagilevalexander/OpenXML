@@ -16,17 +16,19 @@ using System;
 using System.Diagnostics;
 using DocumentFormat.OpenXml.Office.CustomUI;
 using DocumentFormat.OpenXml.Presentation;
+using DocumentFormat.OpenXml.Office2016.Excel;
+using System.Reflection.Metadata;
+using System.Text.RegularExpressions;
 
 namespace OpenXML
 {
 
-    public class GeneratedClass
+    public class DocumentGenerator
     {
-
-        public void CreateWordDocument(string filepath, Contract contract)
+        public void CreateContract(string filePath, Contract contract)
         {
             //Создаем новый документ
-            WordprocessingDocument wordDoc = WordprocessingDocument.Create(filepath, WordprocessingDocumentType.Document);
+            WordprocessingDocument wordDoc = WordprocessingDocument.Create(filePath, WordprocessingDocumentType.Document);
             //Создаем корень документа
             MainDocumentPart mainPart = wordDoc.AddMainDocumentPart();
             mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
@@ -82,10 +84,94 @@ namespace OpenXML
 
             createParagraph(wordDoc, "a3", "24", true, 0, 1, "center", true, "Реквизиты");
             CreateTable(wordDoc, contract.MainProp, contract.ContragentProp);
-            
-            //Закрываем файл
             wordDoc.Close();
+
+            //Заменяем теги значениями из модели контракта
+            ReplacingTags(contract, filePath);
         }
+
+        //Метод замены тегов значениями из модели контракта
+        public void ReplacingTags(Contract contract, string filePath)
+        {
+                using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(filePath, true))
+                {
+                    string docText = null;
+                    using (StreamReader sr = new StreamReader(wordDoc.MainDocumentPart.GetStream()))
+                    {
+                        docText = sr.ReadToEnd();
+                    }
+
+
+                string contractType = "";
+                string contractName = "";
+                string baseOfContract = "";
+                string paragraphBaseOfContract = "";
+
+                //Получаем тип договора
+                switch (contract.ContractType)
+                {
+                    case 1:
+                        contractType = "подряда";
+                        break;
+                    case 2:
+                        contractType = "оказания услуг";
+                        break;
+                    case 3:
+                        contractType = "поставки";
+                        break;
+                    case 4:
+                        contractType = "аренды";
+                        break;
+                }
+
+                //Получаем пункт основания заключения контракта (для 44-ФЗ)
+                if (contract.RegulationType == 3)
+                {
+                    switch (contract.RegulationParagraph)
+                    {
+                        case 1:
+                            paragraphBaseOfContract = "п. 4 ст. 93 ";
+                            break;
+                        case 2:
+                            paragraphBaseOfContract = "п. 8 ст. 93 ";
+                            break;
+                    }
+                }
+
+                //Получаем фактическое наименование контракта и основание заключения
+                switch (contract.RegulationType)
+                {
+                    case 1:
+                        contractName = "Договор";
+                        break;
+                    case 2:
+                        contractName = "Договор";
+                        baseOfContract = "на основании федерального закона \"О закупках товаров, работ, услуг отдельными видами юридических лиц\" от 18.07.2011 N 223-ФЗ,";
+                        break;
+                    case 3:
+                        contractName = "Контракт";
+                        baseOfContract = "на основании " + paragraphBaseOfContract + "федерального закона \"О контрактной системе в сфере закупок товаров, работ, услуг для обеспечения государственных и муниципальных нужд\" от 05.04.2013 N 44-ФЗ,";
+                        break;
+                }
+
+                docText = docText.Replace("договор", contractName);
+                docText = docText.Replace("contractType", contractType);
+                docText = docText.Replace("mainOrganizationName", contract.MainOrganization.Name);
+                docText = docText.Replace("contragentName", contract.Contragent.Name);
+                docText = docText.Replace("mainOrganizationDirectorNameR", contract.MainOrganization.DirectorNameR);
+                docText = docText.Replace("contragentDirectorNameR", contract.Contragent.DirectorNameR);
+                docText = docText.Replace("baseOfContract", baseOfContract);
+                docText = docText.Replace("subjectOfContract", contract.SubjectOfContract);
+                docText = docText.Replace("dateEnd", contract.DateEnd);
+
+
+                using (StreamWriter sw = new StreamWriter(wordDoc.MainDocumentPart.GetStream(FileMode.Create)))
+                    {
+                        sw.Write(docText);
+                    }
+                }
+        }
+
 
         //Метод создания абзаца
         //Параметры:

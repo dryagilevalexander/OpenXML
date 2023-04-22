@@ -32,9 +32,9 @@ namespace OpenXML
             modelBuilder.Entity<Contragent>().HasData(
             new Contragent[]
             {
-                new Contragent {Id=1, Name = "ООО \"Альфа\"", IsMain = true,  INN ="7701071", KPP="7701001", DirectorName = "Иванов И.И.", DirectorNameR = "Иванова И.И."},
-                new Contragent {Id=2, Name = "ООО \"Бетта\"", IsMain = false, INN ="7701051", KPP="7701001", DirectorName = "Капралов Д.М.", DirectorNameR = "Капралова Д.М."},
-                new Contragent {Id=3, Name = "ООО \"Гамма\"", IsMain = false, INN ="7701031", KPP="7701002", DirectorName = "Сергеев А.Р.", DirectorNameR = "Сергеева А.Р."},
+                new Contragent {Id=1, Name = "ООО Муниципальное унитарное предприятие \"Энергетический ресурс\" Некрасовского муниципального района", IsMain = true,  INN ="7701071", KPP="7701001", ShortName ="МУП \"Энергоресурс\"", Address = "Ярославская обл., Некрасовский р-н, рп. Некрасовское, ул. Советская, д. 175", OGRN = "1235550001", Bank ="ПАО \"Сбербанк\"", Account ="40301030000000065", CorrespondentAccount = "3010110000000022", BIK = "7752251",  DirectorName = "Иванов И.И.", DirectorNameR = "Иванова И.И."},
+                new Contragent {Id=2, Name = "ООО \"Сервисное предприятие авторемонт\"", IsMain = false, INN ="7701051", KPP="7701001", ShortName ="ООО \"Авторемонт\"", Address = "Ярославская обл., Некрасовский р-н, рп. Некрасовское, ул. Пролетарская, д. 11", OGRN = "3315350022", Bank ="ПАО \"Сбербанк\"", Account ="403221030000010072", CorrespondentAccount = "3010150000000133", BIK = "7752251",DirectorName = "Капралов Д.М.", DirectorNameR = "Капралова Д.М."},
+                new Contragent {Id=3, Name = "ООО Муниципальное образовательное учреждение \"Некрасовская средняя общеобразовательная школа\"", IsMain = false, INN ="7701031", KPP="7701002", ShortName ="МОУ \"Некрасовская средняя школа\"", Address = "Ярославская обл., Некрасовский р-н, рп. Некрасовское, ул. Матросова, д. 17", OGRN = "3411330222", Bank ="ПАО \"Сбербанк\"", Account ="403551030012010078", CorrespondentAccount = "3010250001000123", BIK = "7752251", DirectorName = "Сергеев А.Р.", DirectorNameR = "Сергеева А.Р."},
 
             });
 
@@ -43,7 +43,9 @@ namespace OpenXML
             {
                 new Condition {Id = 1, Name = "Ответственность сторон", TypeOfCondition = 3},
                 new Condition {Id = 2, Name = "Предмет договора", TypeOfCondition = 3},
-                new Condition {Id = 3, Name = "Права и обязанности сторон", TypeOfCondition = 3}
+                new Condition {Id = 3, Name = "Права и обязанности сторон", TypeOfCondition = 3},
+                new Condition {Id = 4, Name = "Преамбула", Text = "mainOrganizationName именуемое в дальнейшем \"Заказчик\", в лице директора mainOrganizationDirectorNameR, действующего на основании Устава, с одной стороны, и contragentName, именуемое в дальнейшем \"Подрядчик\", в лице директора contragentDirectorNameR, действующего на основании Устава, с другой стороны, baseOfContract заключили настоящий договор о нижеследующем:", TypeOfCondition = 2},
+                new Condition {Id = 5, Name = "Договор contractType № __", TypeOfCondition = 1}
             });
 
             modelBuilder.Entity<SubCondition>().HasData(
@@ -56,7 +58,7 @@ namespace OpenXML
                 new SubCondition {Id=5, Text="Применение неустойки (штрафа, пени) не освобождает Стороны от исполнения обязательств по Контракту.", ConditionId = 1},
                 new SubCondition {Id=6, Text="В случае расторжения Контракта в связи с односторонним отказом Стороны от исполнения Контракта другая Сторона вправе потребовать возмещения только фактически понесенного ущерба, непосредственно обусловленного обстоятельствами, являющимися основанием для принятия решения об одностороннем отказе от исполнения Контракта.", ConditionId = 1},
                 new SubCondition {Id=7, Text="Подрядчик обязуется выполнить по заданию Заказчика работу, указанную в пункте 1.2 настоящего договора, и сдать ее результат Заказчику, а Заказчик обязуется принять результат работы и оплатить его.", ConditionId = 2},
-                new SubCondition {Id=8, Text="Подрядчик обязуется выполнить следующую работу: <subjectOfContract>, именуемую в дальнейшем \"Работа\".", ConditionId = 2},
+                new SubCondition {Id=8, Text="Подрядчик обязуется выполнить следующую работу: subjectOfContract, именуемую в дальнейшем \"Работа\".", ConditionId = 2},
                 new SubCondition {Id=9, Text="Подрядчик обязуется:", ConditionId = 3},
             });
 
@@ -64,7 +66,7 @@ namespace OpenXML
             new SubConditionParagraph[]
             {
                 new SubConditionParagraph {Id=1, Text="Подрядчик обязуется выполнить Работу с надлежащим качеством, из своих материалов, своими силами и средствами.", SubConditionId = 9},
-                new SubConditionParagraph {Id=2, Text="Подрядчик обязуется выполнить Работу в срок до <dateEnd> г.", SubConditionId = 9},
+                new SubConditionParagraph {Id=2, Text="Подрядчик обязуется выполнить Работу в срок до dateEnd г.", SubConditionId = 9},
 
             });
         }
