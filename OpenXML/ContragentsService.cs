@@ -16,11 +16,11 @@ namespace OpenXML
         }
         public Contragent GetContragentById(int id)
         {
-            return db.Contragents.FirstOrDefault(p => p.Id == id);
+            return db.Contragents.Include(p => p.DirectorType).FirstOrDefault(p => p.Id == id);
         }
         public Contragent GetMainOrganization()
         {
-            return db.Contragents.FirstOrDefault(p => p.IsMain == true); 
+            return db.Contragents.Include(p => p.DirectorType).FirstOrDefault(p => p.IsMain == true); 
         }
     }
 }

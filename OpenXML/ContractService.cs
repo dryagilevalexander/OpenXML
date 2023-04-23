@@ -1,35 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace OpenXML
 {
     public class ContractService
     {
         ApplicationContext db;
+        
         public ContractService()
         {
             db = new ApplicationContext();
         }
+
+        //Метод получения шаблона контракта с стандартными условиями для всех типов регулирования
         public ContractTemplate GetContractTemplateId(int id)
         {
             return db.ContractTemplates.Include(p => p.Conditions).ThenInclude(p => p.SubConditions).ThenInclude(c => c.SubConditionParagraphs).FirstOrDefault(p => p.Id == id);
         }
 
+        //Метод установки условий контракта в модель контракта
         public void CreateConditions(Contract contract)
         {
             List<Condition> conditions = new List<Condition>();
+           
+            //Добавляем все условия из общего шаблона (заголовок, преамбула)
+            ContractTemplate commonTemplate = GetContractTemplateId(1);
+            foreach (var condition in commonTemplate.Conditions)
+            {
+                conditions.Add(condition);
+            }
+
             ContractTemplate contractTemplate = GetContractTemplateId(contract.ContractTemplateId);
             foreach (var condition in contractTemplate.Conditions)
             {
+                //Добавляем все общие условия
                 if (condition.RegulationType == 4)
                 {
                     conditions.Add(condition);
                 }
-
+                //Если 44-ФЗ добавляем специфические условия для этого типа регулирования               
                 if (contract.RegulationType == 3)
                 {
                     if (condition.RegulationType == 3)
@@ -41,6 +49,7 @@ namespace OpenXML
             contract.Conditions = conditions;
         }
 
+        //Метод установки реквизитов контрагентов контракта
         public void SetContractRequisites(Contract contract, Contragent mainOrganization, Contragent contragent)
         {
             if (contract.IsCustomer == true)
@@ -73,7 +82,7 @@ namespace OpenXML
                     {"БИК", contragent.BIK},
                     {"р/с", contragent.Account},
                     {"к/с", contragent.CorrespondentAccount},
-                    { "Директор _________ ", contragent.DirectorName}
+                    {contragent.DirectorType.Name + " _________ ", contragent.DirectorName}
             };
             return props;
         }

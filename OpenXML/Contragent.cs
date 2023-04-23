@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +17,8 @@ namespace OpenXML
         public string? Address { get; set; }
         public string INN { get; set; }
         public string KPP { get; set; }
+        public int DirectorTypeId { get; set; }
+        public DirectorType DirectorType { get; set; }
         public string DirectorName { get; set; }
         public string DirectorNameR { get; set; }
         public string? Email { get; set; }

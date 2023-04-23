@@ -1,8 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Drawing.Wordprocessing;
-using DocumentFormat.OpenXml.Math;
 using JustificationValues = DocumentFormat.OpenXml.Wordprocessing.JustificationValues;
 using Justification = DocumentFormat.OpenXml.Wordprocessing.Justification;
 using Paragraph = DocumentFormat.OpenXml.Wordprocessing.Paragraph;
@@ -12,17 +10,9 @@ using RunProperties = DocumentFormat.OpenXml.Wordprocessing.RunProperties;
 using Text = DocumentFormat.OpenXml.Wordprocessing.Text;
 using Style = DocumentFormat.OpenXml.Wordprocessing.Style;
 using StyleValues = DocumentFormat.OpenXml.Wordprocessing.StyleValues;
-using System;
-using System.Diagnostics;
-using DocumentFormat.OpenXml.Office.CustomUI;
-using DocumentFormat.OpenXml.Presentation;
-using DocumentFormat.OpenXml.Office2016.Excel;
-using System.Reflection.Metadata;
-using System.Text.RegularExpressions;
 
 namespace OpenXML
 {
-
     public class DocumentGenerator
     {
         public void CreateContract(string filePath, Contract contract)
@@ -50,7 +40,7 @@ namespace OpenXML
                 if(condit.TypeOfCondition==1)
                 {
                     createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", true, condit.Name);
-                    CreateDateAndPlaceTable(wordDoc, "рп. Некрасовское", "__.__.202_");
+                    CreateDateAndPlaceTable(wordDoc, contract.PlaceOfContract, "__.__.202_");
                     createParagraph(wordDoc, "a3", "24", false, 0, 0, "center", false, "");
                 }
 
@@ -74,7 +64,6 @@ namespace OpenXML
                                 {
                                     createParagraph(wordDoc, "a3", "24", true, 2, 1, "both", false, paragraph.Text);
                                 }
-
                             }
                         }
                     }
@@ -84,6 +73,7 @@ namespace OpenXML
 
             createParagraph(wordDoc, "a3", "24", true, 0, 1, "center", true, "Реквизиты");
             CreateTable(wordDoc, contract.CustomerProp, contract.ExecutorProp);
+            //Закрываем документ (автосохранение включено)
             wordDoc.Close();
 
             //Заменяем теги значениями из модели контракта
@@ -95,17 +85,18 @@ namespace OpenXML
         {
                 using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(filePath, true))
                 {
-                    string docText = null;
-                    using (StreamReader sr = new StreamReader(wordDoc.MainDocumentPart.GetStream()))
-                    {
-                        docText = sr.ReadToEnd();
-                    }
-
+                //Получаем текст (вместе с разметкой) из MainDocumentPart
+                string docText = null;
+                using (StreamReader sr = new StreamReader(wordDoc.MainDocumentPart.GetStream()))
+                {
+                    docText = sr.ReadToEnd();
+                }
 
                 string contractType = "";
                 string contractName = "";
                 string baseOfContract = "";
                 string paragraphBaseOfContract = "";
+                string executor = "";
 
                 //Получаем тип договора
                 switch (contract.ContractType)
@@ -121,6 +112,22 @@ namespace OpenXML
                         break;
                     case 4:
                         contractType = "аренды";
+                        break;
+                }
+
+                switch (contract.ContractType)
+                {
+                    case 1:
+                        executor = "Подрядчик";
+                        break;
+                    case 2:
+                        executor = "Исполнитель";
+                        break;
+                    case 3:
+                        executor = "Поставщик";
+                        break;
+                    case 4:
+                        executor = "Арендатор";
                         break;
                 }
 
@@ -163,8 +170,12 @@ namespace OpenXML
                 docText = docText.Replace("baseOfContract", baseOfContract);
                 docText = docText.Replace("subjectOfContract", contract.SubjectOfContract);
                 docText = docText.Replace("dateEnd", contract.DateEnd);
+                docText = docText.Replace("customerDirectorTypeNameR", contract.Customer.DirectorType.NameR);
+                docText = docText.Replace("executorDirectorTypeNameR", contract.Executor.DirectorType.NameR);
+                docText = docText.Replace("executor", executor);
 
 
+                //Записываем изменения
                 using (StreamWriter sw = new StreamWriter(wordDoc.MainDocumentPart.GetStream(FileMode.Create)))
                     {
                         sw.Write(docText);
@@ -248,7 +259,6 @@ namespace OpenXML
             //Добавляем сформированные свойства в абзац
             para.Append(paragraphProperties);
 
-
             //Добавляем текст с определенными свойствами в абзац
             Run run = para.AppendChild(new Run());
             RunProperties runProperties = new RunProperties();
@@ -259,6 +269,7 @@ namespace OpenXML
             runProperties.Append(runFonts1);
             runProperties.Append(fontSize2);
             runProperties.Append(fontSizeComplexScript2);
+            
             //если шрифт жирный
             if (isBold)
             {
