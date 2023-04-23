@@ -83,7 +83,7 @@ namespace OpenXML
             }
 
             createParagraph(wordDoc, "a3", "24", true, 0, 1, "center", true, "Реквизиты");
-            CreateTable(wordDoc, contract.MainProp, contract.ContragentProp);
+            CreateTable(wordDoc, contract.CustomerProp, contract.ExecutorProp);
             wordDoc.Close();
 
             //Заменяем теги значениями из модели контракта
@@ -156,10 +156,10 @@ namespace OpenXML
 
                 docText = docText.Replace("договор", contractName);
                 docText = docText.Replace("contractType", contractType);
-                docText = docText.Replace("mainOrganizationName", contract.MainOrganization.Name);
-                docText = docText.Replace("contragentName", contract.Contragent.Name);
-                docText = docText.Replace("mainOrganizationDirectorNameR", contract.MainOrganization.DirectorNameR);
-                docText = docText.Replace("contragentDirectorNameR", contract.Contragent.DirectorNameR);
+                docText = docText.Replace("customerName", contract.Customer.Name);
+                docText = docText.Replace("executorName", contract.Executor.Name);
+                docText = docText.Replace("customerDirectorNameR", contract.Customer.DirectorNameR);
+                docText = docText.Replace("executorDirectorNameR", contract.Executor.DirectorNameR);
                 docText = docText.Replace("baseOfContract", baseOfContract);
                 docText = docText.Replace("subjectOfContract", contract.SubjectOfContract);
                 docText = docText.Replace("dateEnd", contract.DateEnd);
@@ -383,7 +383,7 @@ namespace OpenXML
         }
 
         //Метод добавления однострочной таблицы (шапкаб реквизиты)
-        public static void CreateTable(WordprocessingDocument doc, Dictionary<string, string> mainProp, Dictionary<string, string> contragentProp)
+        public static void CreateTable(WordprocessingDocument doc, Dictionary<string, string> customerProp, Dictionary<string, string> executorProp)
         {
             //Получаем корень документа
             MainDocumentPart mainPart = doc.MainDocumentPart;
@@ -416,7 +416,7 @@ namespace OpenXML
             TableCellWidth tableCellWidth1 = new TableCellWidth() { Width = "4672", Type = TableWidthUnitValues.Dxa };
 
             tableCellProperties1.Append(tableCellWidth1);
-            foreach(var prop in mainProp)
+            foreach(var prop in customerProp)
             { 
             Paragraph paragraph = GetParagraph(doc, "a3", "24", false, 0, "left", prop.Key + " " + prop.Value);
             tableCell1.Append(paragraph);
@@ -430,7 +430,7 @@ namespace OpenXML
             TableCellWidth tableCellWidth2 = new TableCellWidth() { Width = "4673", Type = TableWidthUnitValues.Dxa };
 
             tableCellProperties2.Append(tableCellWidth2);
-            foreach (var prop in contragentProp)
+            foreach (var prop in executorProp)
             {
                 Paragraph paragraph = GetParagraph(doc, "a3", "24", false, 0, "left", prop.Key + " " + prop.Value);
                 tableCell2.Append(paragraph);

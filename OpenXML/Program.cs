@@ -1,27 +1,24 @@
 ﻿using OpenXML;
 
 ContragentsService contragentsService = new ContragentsService();
-ConditionsService conditionsService = new ConditionsService();
+ContractService contractService = new ContractService();
 
-Contragent contragentMain = contragentsService.GetMainOrganization();
-Contragent contragent = contragentsService.GetContragentById(2); 
+Contragent mainOrganization = contragentsService.GetMainOrganization();
+Contragent contragent = contragentsService.GetContragentById(2);
 
 Contract contract = new Contract()
 {
     ContractType = 1,
     ContractTemplateId = 1,
+    IsCustomer = true,
     RegulationType = 3,
     RegulationParagraph = 2,
-    Contragent = contragent,
-    MainOrganization = contragentMain,
     SubjectOfContract = "Работы по ремонту теплотрассы в р.п. Некрасовское",
     DateStart = new DateTime(2023, 3, 20).ToShortDateString(),
     DateEnd = new DateTime(2023,12,31).ToShortDateString()
 };
 
-contract.Conditions = contract.CreateConditions(conditionsService);
-contract.MainProp = contract.GetRequisites(contragentMain);
-contract.ContragentProp = contract.GetRequisites(contragent);
-
+contractService.CreateConditions(contract);
+contractService.SetContractRequisites(contract, mainOrganization, contragent);
 
 new DocumentGenerator().CreateContract(@"C:\AIS\Output.docx", contract);
