@@ -60,7 +60,7 @@ namespace OpenXML
         }
 
         //Метод получения реквизитов
-        public Dictionary<string, string> GetRequisites(Contragent contragent)
+        private Dictionary<string, string> GetRequisites(Contragent contragent)
         {
             Dictionary<string, string> props = new Dictionary<string, string>()
             {
